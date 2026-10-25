@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# When this package replaces InfluxData's telegraf, the postrm of telegraf
+# deletes /etc/default/telegraf (INFLUX_TOKEN and other settings).
+# Keep a copy for postinst.
+if [ "$1" = install ] || [ "$1" = upgrade ]; then
+    if [ -f /etc/default/telegraf ]; then
+        mkdir -p /var/lib/telegraf-light
+        cp -p /etc/default/telegraf /var/lib/telegraf-light/default.saved
+    fi
+fi
+
+exit 0

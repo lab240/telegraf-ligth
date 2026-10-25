@@ -1,0 +1,46 @@
+#!/bin/sh
+set -e
+
+SHARE=/usr/share/telegraf-light
+UNIT=/usr/lib/systemd/system/telegraf.service
+SAVED=/var/lib/telegraf-light/default.saved
+
+if [ "$1" = "configure" ]; then
+    getent group telegraf >/dev/null || addgroup --system --quiet telegraf
+    getent passwd telegraf >/dev/null ||
+        adduser --system --quiet --ingroup telegraf --home /etc/telegraf \
+            --no-create-home --shell /usr/sbin/nologin telegraf
+    # Modbus RTU sensors read serial ports.
+    if getent group dialout >/dev/null && ! id -nG telegraf | grep -qw dialout; then
+        adduser --quiet telegraf dialout || true
+    fi
+
+    # The postrm of a replaced telegraf package deletes these files.
+    [ -e "$UNIT" ] || cp "$SHARE/telegraf.service" "$UNIT"
+    if [ -f "$SAVED" ]; then
+        [ -e /etc/default/telegraf ] || cp -p "$SAVED" /etc/default/telegraf
+        rm -f "$SAVED"
+    fi
+    rmdir /var/lib/telegraf-light 2>/dev/null || true
+
+    mkdir -p /etc/telegraf/telegraf.d
+    [ -e /etc/telegraf/telegraf.conf ] || cp "$SHARE/telegraf.conf" /etc/telegraf/telegraf.conf
+    if [ ! -e /etc/default/telegraf ]; then
+        install -m 640 -g telegraf /dev/null /etc/default/telegraf
+    fi
+    install -d -m 770 -o root -g telegraf /var/lib/telegraf
+
+    systemctl enable telegraf.service >/dev/null 2>&1 || true
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload || true
+        # Without inputs or INFLUX_TOKEN Telegraf does not start: not an error here.
+        if ! systemctl restart telegraf.service; then
+            # Stop the restart loop so that a later start is not rate limited.
+            systemctl stop telegraf.service || true
+            systemctl reset-failed telegraf.service || true
+            echo "telegraf-light: telegraf did not start, see journalctl -u telegraf" >&2
+        fi
+    fi
+fi
+
+exit 0

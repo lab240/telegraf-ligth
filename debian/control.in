@@ -1,0 +1,20 @@
+Package: telegraf-light
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: NapiLab <info@napilab.ru>
+Installed-Size: @SIZE@
+Depends: adduser
+Provides: telegraf (= @UPSTREAM@)
+Conflicts: telegraf
+Replaces: telegraf
+Section: net
+Priority: optional
+Homepage: https://github.com/lab240/telegraf-ligth
+Description: Telegraf agent with a reduced plugin set
+ Telegraf @UPSTREAM@ built with the plugins NaPi devices use: inputs cpu, mem,
+ disk, diskio, net, system, temp, modbus, snmp, mqtt_consumer, output
+ influxdb_v2, parsers json, json_v2, influx, value.
+ .
+ About 22 MB on disk and 20 MB RSS instead of 300 MB and 140 MB of the full
+ build. Drop-in replacement for the telegraf package: same service, user and
+ config paths.

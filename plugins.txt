@@ -1,0 +1,24 @@
+# Plugins of the light Telegraf build: one build tag per line.
+# See docs/CUSTOMIZATION.md in the Telegraf sources.
+
+# NaPi sensor templates (web UI, Sensors page)
+inputs.cpu
+inputs.modbus
+inputs.snmp
+inputs.mqtt_consumer
+
+# Host metrics
+inputs.mem
+inputs.disk
+inputs.diskio
+inputs.net
+inputs.system
+inputs.temp
+
+outputs.influxdb_v2
+
+# data_format for mqtt_consumer
+parsers.json
+parsers.json_v2
+parsers.influx
+parsers.value

@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        # Not on "upgrade": the unit stays enabled across our own upgrades.
+        rm -f /etc/systemd/system/multi-user.target.wants/telegraf.service
+        [ -d /run/systemd/system ] && systemctl daemon-reload || true
+        ;;
+    purge)
+        rm -f /etc/telegraf/telegraf.conf /etc/default/telegraf
+        rmdir /etc/telegraf/telegraf.d /etc/telegraf 2>/dev/null || true
+        rm -rf /var/lib/telegraf /var/lib/telegraf-light
+        ;;
+esac
+
+exit 0
